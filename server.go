@@ -7,6 +7,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/smoothbronco/gqlgen_tutorial/external"
 	"github.com/smoothbronco/gqlgen_tutorial/graph"
 	"github.com/smoothbronco/gqlgen_tutorial/graph/generated"
 )
@@ -19,7 +20,12 @@ func main() {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	db, err := external.ConnectDatabase()
+	if err != nil {
+		panic(err)
+	}
+
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{DB: db}}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
